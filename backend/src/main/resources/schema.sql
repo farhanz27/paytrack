@@ -46,6 +46,7 @@ CREATE TABLE companies (
   billing_city VARCHAR(128),
   billing_state VARCHAR(128),
   billing_country VARCHAR(128) DEFAULT 'Malaysia',
+  default_currency VARCHAR(10) DEFAULT 'MYR',
   status VARCHAR(32) DEFAULT 'ACTIVE',
   deleted BOOLEAN DEFAULT FALSE,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -80,6 +81,8 @@ CREATE TABLE customers (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   company_id BIGINT NOT NULL,
 
+  customer_number VARCHAR(50),
+
   name VARCHAR(255) NOT NULL,
   email VARCHAR(255),
   phone VARCHAR(64),
@@ -101,6 +104,7 @@ CREATE TABLE customers (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
   FOREIGN KEY (company_id) REFERENCES companies(id),
+  UNIQUE(company_id, customer_number),
   INDEX(company_id, archived_at),
   INDEX(company_id, email)
 );
@@ -112,6 +116,8 @@ CREATE TABLE catalog_items (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   company_id BIGINT NOT NULL,
 
+  item_code VARCHAR(50),
+
   name VARCHAR(255) NOT NULL,
   description TEXT,
   price DECIMAL(12,2) NOT NULL,
@@ -120,6 +126,7 @@ CREATE TABLE catalog_items (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
   FOREIGN KEY (company_id) REFERENCES companies(id),
+  UNIQUE(company_id, item_code),
   INDEX(company_id, archived_at)
 );
 
@@ -136,8 +143,10 @@ CREATE TABLE quotations (
 
   issue_date DATE,
   valid_until DATE,
+  currency VARCHAR(10) DEFAULT 'MYR',
 
   customer_name VARCHAR(255),
+  customer_company VARCHAR(255),
   customer_email VARCHAR(255),
   billing_address TEXT,
 
@@ -145,6 +154,8 @@ CREATE TABLE quotations (
   discount DECIMAL(12,2),
   tax DECIMAL(12,2),
   grand_total DECIMAL(12,2),
+
+  notes TEXT,
 
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
@@ -158,7 +169,8 @@ CREATE TABLE quotation_items (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   quotation_id BIGINT NOT NULL,
 
-  description VARCHAR(255),
+  name VARCHAR(255),
+  description TEXT,
   unit_price DECIMAL(12,2),
   quantity INT,
   subtotal DECIMAL(12,2),
@@ -183,6 +195,7 @@ CREATE TABLE invoices (
   currency VARCHAR(10) DEFAULT 'MYR',
 
   customer_name VARCHAR(255),
+  customer_company VARCHAR(255),
   customer_email VARCHAR(255),
   billing_address TEXT,
 
@@ -217,7 +230,8 @@ CREATE TABLE invoice_items (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   invoice_id BIGINT NOT NULL,
 
-  description VARCHAR(255),
+  name VARCHAR(255),
+  description TEXT,
   unit_price DECIMAL(12,2),
   quantity INT,
   subtotal DECIMAL(12,2),
@@ -234,6 +248,8 @@ CREATE TABLE payments (
   company_id BIGINT NOT NULL,
   invoice_id BIGINT NOT NULL,
 
+  receipt_number VARCHAR(50),
+
   amount DECIMAL(12,2) NOT NULL,
   payment_date DATETIME,
 
@@ -242,11 +258,16 @@ CREATE TABLE payments (
   notes TEXT,
   receipt_url VARCHAR(512),
 
+  voided BOOLEAN NOT NULL DEFAULT FALSE,
+  voided_at DATETIME NULL,
+  voided_by VARCHAR(255),
+
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
   FOREIGN KEY (company_id) REFERENCES companies(id),
   FOREIGN KEY (invoice_id) REFERENCES invoices(id),
 
+  UNIQUE(company_id, receipt_number),
   INDEX(invoice_id),
   INDEX(company_id)
 );
@@ -286,6 +307,13 @@ CREATE TABLE invitations (
   INDEX(company_id),
   INDEX(token)
 );
+
+-- =========================================================
+-- MIGRATIONS (run manually on existing databases)
+-- =========================================================
+-- ALTER TABLE companies ADD COLUMN default_currency VARCHAR(10) DEFAULT 'MYR';
+-- ALTER TABLE quotation_items ADD COLUMN name VARCHAR(255) AFTER quotation_id, MODIFY COLUMN description TEXT;
+-- ALTER TABLE invoice_items ADD COLUMN name VARCHAR(255) AFTER invoice_id, MODIFY COLUMN description TEXT;
 
 -- =========================================================
 -- END OF SCHEMA
