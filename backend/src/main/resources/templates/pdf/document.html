@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <style>
+        @page {
+            size: A4;
+            margin: 40px 45px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 13px;
+            color: #2c3e50;
+            line-height: 1.5;
+        }
+
+        /* ===== Section 1: Header ===== */
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding-bottom: 18px;
+            border-bottom: 2.5px solid #3498db;
+            margin-bottom: 28px;
+        }
+
+        .company-name {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .company-detail {
+            font-size: 11px;
+            color: #78828f;
+            line-height: 1.75;
+        }
+
+        .meta-right {
+            text-align: right;
+        }
+
+        .doc-type {
+            font-size: 32px;
+            font-weight: bold;
+            color: #3498db;
+            letter-spacing: 1.5px;
+        }
+
+        .doc-number {
+            font-size: 13px;
+            font-weight: 500;
+            color: #2c3e50;
+            margin-top: 4px;
+        }
+
+        .meta-row {
+            font-size: 11px;
+            margin-top: 7px;
+        }
+
+        .meta-label {
+            color: #78828f;
+        }
+
+        .meta-value {
+            font-weight: bold;
+            margin-left: 8px;
+            color: #2c3e50;
+        }
+
+        /* ===== Section 2: Bill To ===== */
+
+        .bill-to {
+            margin-bottom: 28px;
+        }
+
+        .section-label {
+            font-size: 10px;
+            font-weight: bold;
+            color: #78828f;
+            letter-spacing: 0.8px;
+            margin-bottom: 7px;
+        }
+
+        .customer-name {
+            font-size: 14px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .customer-detail {
+            font-size: 11px;
+            color: #78828f;
+            margin-top: 2px;
+            line-height: 1.6;
+        }
+
+        /* ===== Section 3: Items Table ===== */
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .items-table thead tr {
+            background: #2c3e50;
+            color: #fff;
+        }
+
+        .items-table th {
+            padding: 9px 10px;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .items-table th.left   { text-align: left; }
+        .items-table th.center { text-align: center; }
+        .items-table th.right  { text-align: right; }
+
+        .items-table tbody tr:nth-child(even) {
+            background: #f5f7fa;
+        }
+
+        .items-table td {
+            padding: 9px 10px;
+            font-size: 12px;
+            border-bottom: 1px solid #d5dbe6;
+            vertical-align: top;
+        }
+
+        .items-table td.center { text-align: center; }
+        .items-table td.right  { text-align: right; }
+
+        .item-title {
+            font-weight: bold;
+            font-size: 12px;
+            color: #2c3e50;
+        }
+
+        .item-desc {
+            font-size: 11px;
+            color: #78828f;
+            margin-top: 2px;
+        }
+
+        .item-empty {
+            text-align: center;
+            color: #78828f;
+            padding: 18px;
+        }
+
+        /* ===== Section 4: Totals ===== */
+
+        .totals-wrap {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .totals-table {
+            width: 300px;
+            border-collapse: collapse;
+        }
+
+        .totals-table td {
+            padding: 5px 8px;
+            font-size: 12px;
+        }
+
+        .totals-table td.label  { color: #78828f; text-align: right; }
+        .totals-table td.amount { text-align: right; color: #2c3e50; }
+
+        .totals-sep td {
+            border-top: 1.5px solid #3498db;
+            padding-top: 4px;
+            padding-bottom: 0;
+        }
+
+        .grand-total td {
+            font-weight: bold;
+            font-size: 13px;
+            background: #f5f7fa;
+            padding: 8px;
+        }
+
+        /* ===== Notes ===== */
+
+        .notes-section {
+            margin-top: 32px;
+            padding-top: 14px;
+            border-top: 1px solid #d5dbe6;
+        }
+
+        .notes-body {
+            font-size: 12px;
+            color: #2c3e50;
+            margin-top: 6px;
+            white-space: pre-wrap;
+        }
+
+        /* ===== Section 5: Footer ===== */
+
+        .thank-you {
+            text-align: center;
+            margin-top: 48px;
+            padding-top: 18px;
+            border-top: 1px solid #d5dbe6;
+            font-size: 12px;
+            color: #78828f;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== Section 1: Header ===== -->
+<div class="header">
+    <div class="header-left">
+        <div class="company-name" th:text="${doc.companyName()}">Company Name</div>
+        <div th:each="line : ${doc.companyAddressLines()}" class="company-detail" th:text="${line}"></div>
+        <div class="company-detail" th:if="${doc.companyPhone() != null and !doc.companyPhone().isBlank()}" th:text="${doc.companyPhone()}"></div>
+        <div class="company-detail" th:if="${doc.companyEmail() != null and !doc.companyEmail().isBlank()}" th:text="${doc.companyEmail()}"></div>
+    </div>
+    <div class="meta-right">
+        <div class="doc-type" th:text="${doc.docType()}">INVOICE</div>
+        <div class="doc-number" th:text="${doc.docNumber()}">INV-00001</div>
+        <div class="meta-row">
+            <span class="meta-label">Issue Date</span>
+            <span class="meta-value" th:text="${doc.issueDate()}"></span>
+        </div>
+        <div class="meta-row">
+            <span class="meta-label" th:text="${doc.secondDateLabel()}">Due Date</span>
+            <span class="meta-value" th:text="${doc.secondDate()}"></span>
+        </div>
+    </div>
+</div>
+
+<!-- ===== Section 2: Bill To ===== -->
+<div class="bill-to">
+    <div class="section-label">BILL TO</div>
+    <div class="customer-name" th:text="${doc.customerName()}"></div>
+    <div class="customer-detail" th:if="${doc.customerCompany() != null and !doc.customerCompany().isBlank()}" th:text="${doc.customerCompany()}"></div>
+    <div th:each="line : ${doc.billingAddressLines()}" class="customer-detail" th:text="${line}"></div>
+    <div class="customer-detail" th:if="${doc.customerEmail() != null and !doc.customerEmail().isBlank()}" th:text="${doc.customerEmail()}"></div>
+</div>
+
+<!-- ===== Section 3: Items Table ===== -->
+<table class="items-table">
+    <thead>
+        <tr>
+            <th class="left"   style="width:52%">DESCRIPTION</th>
+            <th class="center" style="width:8%">QTY</th>
+            <th class="right"  style="width:20%">UNIT PRICE</th>
+            <th class="right"  style="width:20%">SUBTOTAL</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:if="${doc.items() == null or #lists.isEmpty(doc.items())}">
+            <td colspan="4" class="item-empty">No items</td>
+        </tr>
+        <tr th:each="item : ${doc.items()}">
+            <td>
+                <div class="item-title" th:text="${item.name != null and !item.name.isBlank()} ? ${item.name} : ${item.description}"></div>
+                <div class="item-desc" th:if="${item.name != null and !item.name.isBlank() and item.description != null and !item.description.isBlank()}" th:text="${item.description}"></div>
+            </td>
+            <td class="center" th:text="${item.quantity}"></td>
+            <td class="right"  th:text="${#numbers.formatDecimal(item.unitPrice,  1, 'COMMA', 2, 'POINT')}"></td>
+            <td class="right"  th:text="${#numbers.formatDecimal(item.subtotal,   1, 'COMMA', 2, 'POINT')}"></td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- ===== Section 4: Totals ===== -->
+<div class="totals-wrap">
+    <table class="totals-table">
+        <tr>
+            <td class="label">Subtotal</td>
+            <td class="amount" th:text="${#numbers.formatDecimal(doc.subtotal(), 1, 'COMMA', 2, 'POINT')}"></td>
+        </tr>
+        <tr th:if="${doc.discount() != null and doc.discount().compareTo(T(java.math.BigDecimal).ZERO) > 0}">
+            <td class="label">Discount</td>
+            <td class="amount" th:text="'- ' + ${#numbers.formatDecimal(doc.discount(), 1, 'COMMA', 2, 'POINT')}"></td>
+        </tr>
+        <tr th:if="${doc.tax() != null and doc.tax().compareTo(T(java.math.BigDecimal).ZERO) > 0}">
+            <td class="label">Tax</td>
+            <td class="amount" th:text="${#numbers.formatDecimal(doc.tax(), 1, 'COMMA', 2, 'POINT')}"></td>
+        </tr>
+        <tr class="totals-sep"><td colspan="2"></td></tr>
+        <tr class="grand-total">
+            <td class="label">Grand Total</td>
+            <td class="amount" th:text="${#numbers.formatDecimal(doc.grandTotal(), 1, 'COMMA', 2, 'POINT')}"></td>
+        </tr>
+        <tr th:if="${doc.paidAmount() != null and doc.paidAmount().compareTo(T(java.math.BigDecimal).ZERO) > 0}">
+            <td class="label">Amount Paid</td>
+            <td class="amount" th:text="${#numbers.formatDecimal(doc.paidAmount(), 1, 'COMMA', 2, 'POINT')}"></td>
+        </tr>
+        <tr th:if="${doc.remainingAmount() != null and doc.remainingAmount().compareTo(T(java.math.BigDecimal).ZERO) > 0}">
+            <td class="label">Balance Due</td>
+            <td class="amount" th:text="${#numbers.formatDecimal(doc.remainingAmount(), 1, 'COMMA', 2, 'POINT')}"></td>
+        </tr>
+    </table>
+</div>
+
+<!-- ===== Notes ===== -->
+<div class="notes-section" th:if="${doc.notes() != null and !doc.notes().isBlank()}">
+    <div class="section-label">NOTES</div>
+    <div class="notes-body" th:text="${doc.notes()}"></div>
+</div>
+
+<!-- ===== Section 5: Footer ===== -->
+<div class="thank-you">Thank you for your business</div>
+
+</body>
+</html>
